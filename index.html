@@ -4,32 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>将棋タイマー</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #timers {
+            display: flex;
+            flex: 1;
+        }
+        #sente-container, #gote-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        #sente-container {
+            background-color: #f0f0f0;
+        }
+        #gote-container {
+            background-color: #ffffff;
+        }
+        .time-display {
+            font-size: 6rem;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #controls {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+        }
+        #controls button, #controls select, #controls input {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 0 5px;
+        }
+        #fischer-time {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="timer" id="sente-timer">
-            <h2>先手</h2>
-            <div id="sente-time">10:00</div>
+    <div id="timers">
+        <div id="sente-container">
+            <div id="sente-time" class="time-display">10:00.00</div>
         </div>
-        <div class="timer" id="gote-timer">
-            <h2>後手</h2>
-            <div id="gote-time">10:00</div>
+        <div id="gote-container">
+            <div id="gote-time" class="time-display">10:00.00</div>
         </div>
     </div>
-
-    <div class="controls">
+    <div id="controls">
         <button id="start-button">スタート</button>
         <button id="pause-button">一時停止</button>
         <button id="reset-button">リセット</button>
         <select id="mode-select">
-            <option value="fischer">フィッシャー</option>
             <option value="sudden-death">切れ負け</option>
+            <option value="fischer">フィッシャー</option>
         </select>
-        <input type="number" id="fischer-time" placeholder="加算秒数 (フィッシャー用)">
-        <input type="number" id="initial-time" placeholder="開始時間（分）">
+        <input type="number" id="initial-time" placeholder="開始時間（分）" min="1" max="60">
+        <input type="number" id="fischer-time" placeholder="フィッシャー加算秒数" min="1" max="60">
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        let senteTime = 600;  // 初期時間（秒単位）
+        let goteTime = 600;   // 初期時間（秒単位）
+        let activeTimer = null;
+        let mode = 'sudden-death';  // デフォルトモード
+        let fischerIncrement = 0;
+        let currentPlayer = 'sente';  // 先手から開始
+
+        document.getElementById('sente-container').addEventListener('click', () => toggleTimer('gote'));
+        document.getElementById('gote-container').addEventListener('click', () => toggleTimer('sente'));
+        document.getElementById('start-button').addEventListener('click', startTimers);
+        document.getElementById('pause-button').addEventListener('click', pauseTimers);
+        document.getElementById('reset-button').addEventListener('click', resetTimers);
+        document.getElementById('mode-select').addEventListener('change', updateMode);
+        document.getElementById('fischer-time').addEventListener('input', updateFischerTime);
+        document.getElementById('initial-time').addEventListener('input', updateInitialTime);
+
+        function startTimers() {
+            if (!activeTimer) {
+                activeTimer = setInterval(() => {
+                    if (currentPlayer === 'sente') {
+                        senteTime = updateTimer('sente-time', senteTime);
+                    } else {
+                        goteTime = updateTimer('gote-time', goteTime);
+                    }
+                }, 100);
+            }
+        }
+
+        function pauseTimers() {
+            clearInterval(activeTimer);
+            activeTimer = null;
+        }
+
+        function resetTimers() {
+            clearInterval(activeTimer);
+            activeTimer = null;
+            const initialTime = parseInt(document.getElementById('initial-time').value, 10) || 10;
+            senteTime = initialTime * 60;  // デフォルトの開始時間にリセット
+            goteTime = initialTime * 60;
+            updateDisplay('sente-time', senteTime);
+            updateDisplay('gote-time', goteTime);
+            currentPlayer = 'sente';  // リセット後は先手から再開
+        }
+
+        function updateTimer(id, time) {
+            if (time > 0) {
+                time -= 0.1;
+                updateDisplay(id, time);
+
+                if (time <= 0) {
+                    pauseTimers();
+                    alert(`${id === 'sente-time' ? '先手' : '後手'}の時間が切れました!`);
+                }
+            }
+            return time;
+        }
+
+        function updateDisplay(id, time) {
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            document.getElementById(id).textContent = `${String(minutes).padStart(2, '0')}:${seconds.toFixed(2).padStart(5, '0')}`;
+        }
+
+        function updateMode() {
+            mode = document.getElementById('mode-select').value;
+            const fischerInput = document.getElementById('fischer-time');
+            const initialTimeInput = document.getElementById('initial-time');
+            
+            if (mode === 'fischer') {
+                fischerInput.style.display = 'inline';
+                initialTimeInput.placeholder = '開始時間（分）';
+            } else if (mode === 'sudden-death') {
+                fischerInput.style.display = 'none';
+                initialTimeInput.placeholder = '開始時間（分）';
+            }
+        }
+
+        function updateFischerTime() {
+            fischerIncrement = parseInt(document.getElementById('fischer-time').value, 10) || 0;
+        }
+
+        function updateInitialTime() {
+            const initialTime = parseInt(document.getElementById('initial-time').value, 10) || 10;
+            senteTime = initialTime * 60;
+            goteTime = initialTime * 60;
+            updateDisplay('sente-time', senteTime);
+            updateDisplay('gote-time', goteTime);
+        }
+
+        function toggleTimer(nextPlayer) {
+            pauseTimers();  // 現在のタイマーを一時停止
+            currentPlayer = nextPlayer;
+
+            if (mode === 'fischer') {
+                if (currentPlayer === 'sente') {
+                    goteTime += fischerIncrement;
+                } else {
+                    senteTime += fischerIncrement;
+                }
+            }
+
+            startTimers();  // 次のプレイヤーのタイマーを開始
+        }
+    </script>
 </body>
 </html>
