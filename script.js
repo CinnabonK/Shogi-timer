@@ -3,6 +3,7 @@ let goteTime = 600;   // 初期時間（秒単位）
 let activeTimer = null;
 let mode = 'sudden-death';  // デフォルトモード
 let fischerIncrement = 0;
+let currentPlayer = 'sente';  // 先手から開始
 
 document.getElementById('start-button').addEventListener('click', startTimers);
 document.getElementById('pause-button').addEventListener('click', pauseTimers);
@@ -14,12 +15,10 @@ document.getElementById('initial-time').addEventListener('input', updateInitialT
 function startTimers() {
     if (!activeTimer) {
         activeTimer = setInterval(() => {
-            if (mode === 'fischer') {
-                senteTime = updateTimer('sente-time', senteTime, true);
-                goteTime = updateTimer('gote-time', goteTime, true);
-            } else if (mode === 'sudden-death') {
-                senteTime = updateTimer('sente-time', senteTime, false);
-                goteTime = updateTimer('gote-time', goteTime, false);
+            if (currentPlayer === 'sente') {
+                senteTime = updateTimer('sente-time', senteTime);
+            } else {
+                goteTime = updateTimer('gote-time', goteTime);
             }
         }, 1000);
     }
@@ -37,15 +36,24 @@ function resetTimers() {
     goteTime = 600;
     updateDisplay('sente-time', senteTime);
     updateDisplay('gote-time', goteTime);
+    currentPlayer = 'sente';  // リセット後は先手から再開
 }
 
-function updateTimer(id, time, isFischer) {
+function updateTimer(id, time) {
     if (time > 0) {
         time -= 1;
-        if (isFischer) {
-            time += fischerIncrement;
-        }
         updateDisplay(id, time);
+
+        if (mode === 'fischer') {
+            time += fischerIncrement;  // フィッシャーモードの場合、加算時間を追加
+        }
+
+        // ターンの交代（時間が減った後に交代）
+        if (id === 'sente-time') {
+            currentPlayer = 'gote';
+        } else {
+            currentPlayer = 'sente';
+        }
     } else {
         pauseTimers();
         alert(`${id === 'sente-time' ? '先手' : '後手'}の時間が切れました!`);
