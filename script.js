@@ -14,7 +14,7 @@ function startTimer(turn) {
         }, 100);
     } else if (mode === 'fischer') {
         timers[turn].interval = setInterval(() => {
-            timers[turn].time += 1;
+            timers[turn].time -= 1;
             updateDisplay();
         }, 1000);
     }
