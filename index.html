@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>将棋対局タイマー</title>
+    <title>将棋タイマー</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="settings">
-        <label for="mode">モード:</label>
-        <select id="mode">
-            <option value="byoyomi">切れ負け</option>
+    <div class="container">
+        <div class="timer" id="sente-timer">
+            <h2>先手</h2>
+            <div id="sente-time">10:00</div>
+        </div>
+        <div class="timer" id="gote-timer">
+            <h2>後手</h2>
+            <div id="gote-time">10:00</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="start-button">スタート</button>
+        <button id="pause-button">一時停止</button>
+        <button id="reset-button">リセット</button>
+        <select id="mode-select">
             <option value="fischer">フィッシャー</option>
+            <option value="sudden-death">切れ負け</option>
         </select>
-
-        <label for="time">持ち時間 (秒):</label>
-        <input type="number" id="time" value="300" min="1" />
-
-        <button onclick="setInitialTime()">設定</button>
+        <input type="number" id="fischer-time" placeholder="加算秒数 (フィッシャー用)">
     </div>
-    <div class="timer-container">
-        <div id="left-half" class="half" onclick="changeTurn('left')">
-            <div id="left-time" class="time">00:00.00</div>
-            <button id="left-button">後手</button>
-        </div>
-        <div class="separator"></div>
-        <div id="right-half" class="half" onclick="changeTurn('right')">
-            <div id="right-time" class="time">00:00.00</div>
-            <button id="right-button">先手</button>
-        </div>
-    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
