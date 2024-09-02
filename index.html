@@ -8,14 +8,14 @@
 </head>
 <body>
     <div class="timer-container">
-        <div id="left-timer" class="timer">
+        <div id="left-half" class="half" onclick="changeTurn('left')">
+            <div id="left-time" class="time">00:00</div>
             <button id="left-button">後手</button>
-            <div id="left-time">00:00</div>
         </div>
-        <div class="divider"></div>
-        <div id="right-timer" class="timer">
+        <div class="separator"></div>
+        <div id="right-half" class="half" onclick="changeTurn('right')">
+            <div id="right-time" class="time">00:00</div>
             <button id="right-button">先手</button>
-            <div id="right-time">00:00</div>
         </div>
     </div>
     <script src="script.js"></script>
