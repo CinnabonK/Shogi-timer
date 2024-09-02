@@ -1,14 +1,23 @@
 let currentTurn = 'left';
+let mode = 'byoyomi'; // デフォルトのモード
+let initialTime = 300; // デフォルトの持ち時間（秒）
 let timers = {
     left: { time: 0, interval: null },
     right: { time: 0, interval: null }
 };
 
 function startTimer(turn) {
-    timers[turn].interval = setInterval(() => {
-        timers[turn].time += 1;
-        updateDisplay();
-    }, 1000);
+    if (mode === 'byoyomi') {
+        timers[turn].interval = setInterval(() => {
+            timers[turn].time += 0.1;
+            updateDisplay();
+        }, 100);
+    } else if (mode === 'fischer') {
+        timers[turn].interval = setInterval(() => {
+            timers[turn].time += 1;
+            updateDisplay();
+        }, 1000);
+    }
 }
 
 function stopTimer(turn) {
@@ -23,8 +32,9 @@ function updateDisplay() {
 
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const secs = Math.floor(seconds % 60);
+    const millis = Math.floor((seconds % 1) * 100);
+    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(millis).padStart(2, '0')}`;
 }
 
 function changeTurn(turn) {
@@ -35,7 +45,22 @@ function changeTurn(turn) {
     }
 }
 
+function setInitialTime() {
+    initialTime = parseInt(document.getElementById('time').value, 10);
+    timers.left.time = initialTime;
+    timers.right.time = initialTime;
+    updateDisplay();
+}
+
 document.getElementById('left-half').addEventListener('click', () => changeTurn('left'));
 document.getElementById('right-half').addEventListener('click', () => changeTurn('right'));
 
-startTimer(currentTurn);  // 初めに左側を開始
+document.getElementById('mode').addEventListener('change', (event) => {
+    mode = event.target.value;
+    if (timers.left.interval) {
+        stopTimer(currentTurn);
+        startTimer(currentTurn);
+    }
+});
+
+setInitialTime(); // 初めに設定を反映
