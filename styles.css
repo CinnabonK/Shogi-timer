@@ -1,11 +1,19 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     height: 100vh;
     margin: 0;
     background-color: #f0f0f0;
+}
+
+.settings {
+    margin-bottom: 20px;
+}
+
+.settings label, .settings input, .settings select, .settings button {
+    margin: 5px;
 }
 
 .timer-container {
@@ -26,6 +34,7 @@ body {
     border: 1px solid #000;
     box-sizing: border-box;
     cursor: pointer;
+    position: relative;
 }
 
 .separator {
