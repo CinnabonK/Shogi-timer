@@ -1,14 +1,25 @@
-let timerInterval;
-let currentTimer = 'right'; // 'left' or 'right'
+let currentTurn = 'left';
+let timers = {
+    left: { time: 0, interval: null },
+    right: { time: 0, interval: null }
+};
 
-const leftButton = document.getElementById('left-button');
-const rightButton = document.getElementById('right-button');
-const leftTimeDisplay = document.getElementById('left-time');
-const rightTimeDisplay = document.getElementById('right-time');
+function startTimer(turn) {
+    timers[turn].interval = setInterval(() => {
+        timers[turn].time += 1;
+        updateDisplay();
+    }, 1000);
+}
 
-let leftTime = 0;
-let rightTime = 0;
-let runningTime = 0;
+function stopTimer(turn) {
+    clearInterval(timers[turn].interval);
+    timers[turn].interval = null;
+}
+
+function updateDisplay() {
+    document.getElementById('left-time').innerText = formatTime(timers.left.time);
+    document.getElementById('right-time').innerText = formatTime(timers.right.time);
+}
 
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
@@ -16,38 +27,15 @@ function formatTime(seconds) {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-function startTimer() {
-    timerInterval = setInterval(() => {
-        runningTime++;
-        if (currentTimer === 'left') {
-            leftTime++;
-            leftTimeDisplay.textContent = formatTime(leftTime);
-        } else {
-            rightTime++;
-            rightTimeDisplay.textContent = formatTime(rightTime);
-        }
-    }, 1000);
-}
-
-function switchTurn() {
-    clearInterval(timerInterval);
-    runningTime = 0;
-    if (currentTimer === 'left') {
-        currentTimer = 'right';
-        rightButton.disabled = true;
-        leftButton.disabled = false;
-    } else {
-        currentTimer = 'left';
-        leftButton.disabled = true;
-        rightButton.disabled = false;
+function changeTurn(turn) {
+    if (currentTurn !== turn) {
+        stopTimer(currentTurn);
+        currentTurn = turn;
+        startTimer(currentTurn);
     }
-    startTimer();
 }
 
-leftButton.addEventListener('click', switchTurn);
-rightButton.addEventListener('click', switchTurn);
+document.getElementById('left-half').addEventListener('click', () => changeTurn('left'));
+document.getElementById('right-half').addEventListener('click', () => changeTurn('right'));
 
-// Initial setup
-leftButton.disabled = false;
-rightButton.disabled = true;
-startTimer();
+startTimer(currentTurn);  // 初めに左側を開始
