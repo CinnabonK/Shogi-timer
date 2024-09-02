@@ -1,66 +1,68 @@
-let currentTurn = 'left';
-let mode = 'byoyomi'; // デフォルトのモード
-let initialTime = 300; // デフォルトの持ち時間（秒）
-let timers = {
-    left: { time: 0, interval: null },
-    right: { time: 0, interval: null }
-};
+let senteTime = 600;  // 初期時間（秒単位）
+let goteTime = 600;   // 初期時間（秒単位）
+let activeTimer = null;
+let mode = 'sudden-death';  // デフォルトモード
+let fischerIncrement = 0;
 
-function startTimer(turn) {
-    if (mode === 'byoyomi') {
-        timers[turn].interval = setInterval(() => {
-            timers[turn].time += 0.1;
-            updateDisplay();
-        }, 100);
-    } else if (mode === 'fischer') {
-        timers[turn].interval = setInterval(() => {
-            timers[turn].time -= 1;
-            updateDisplay();
+document.getElementById('start-button').addEventListener('click', startTimers);
+document.getElementById('pause-button').addEventListener('click', pauseTimers);
+document.getElementById('reset-button').addEventListener('click', resetTimers);
+document.getElementById('mode-select').addEventListener('change', updateMode);
+document.getElementById('fischer-time').addEventListener('input', updateFischerTime);
+
+function startTimers() {
+    if (!activeTimer) {
+        activeTimer = setInterval(() => {
+            if (mode === 'fischer') {
+                senteTime = updateTimer('sente-time', senteTime);
+                goteTime = updateTimer('gote-time', goteTime);
+            } else {
+                if (senteTime > 0) {
+                    senteTime = updateTimer('sente-time', senteTime);
+                }
+                if (goteTime > 0) {
+                    goteTime = updateTimer('gote-time', goteTime);
+                }
+            }
         }, 1000);
     }
 }
 
-function stopTimer(turn) {
-    clearInterval(timers[turn].interval);
-    timers[turn].interval = null;
+function pauseTimers() {
+    clearInterval(activeTimer);
+    activeTimer = null;
 }
 
-function updateDisplay() {
-    document.getElementById('left-time').innerText = formatTime(timers.left.time);
-    document.getElementById('right-time').innerText = formatTime(timers.right.time);
+function resetTimers() {
+    clearInterval(activeTimer);
+    activeTimer = null;
+    senteTime = 600;
+    goteTime = 600;
+    updateDisplay('sente-time', senteTime);
+    updateDisplay('gote-time', goteTime);
 }
 
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    const millis = Math.floor((seconds % 1) * 100);
-    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(millis).padStart(2, '0')}`;
-}
-
-function changeTurn(turn) {
-    if (currentTurn !== turn) {
-        stopTimer(currentTurn);
-        currentTurn = turn;
-        startTimer(currentTurn);
+function updateTimer(id, time) {
+    if (time > 0) {
+        time -= 1;
+        updateDisplay(id, time);
+    } else {
+        pauseTimers();
+        alert(`${id === 'sente-time' ? '先手' : '後手'}の時間が切れました!`);
     }
+    return time;
 }
 
-function setInitialTime() {
-    initialTime = parseInt(document.getElementById('time').value, 10);
-    timers.left.time = initialTime;
-    timers.right.time = initialTime;
-    updateDisplay();
+function updateDisplay(id, time) {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    document.getElementById(id).textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
-document.getElementById('left-half').addEventListener('click', () => changeTurn('left'));
-document.getElementById('right-half').addEventListener('click', () => changeTurn('right'));
+function updateMode() {
+    mode = document.getElementById('mode-select').value;
+}
 
-document.getElementById('mode').addEventListener('change', (event) => {
-    mode = event.target.value;
-    if (timers.left.interval) {
-        stopTimer(currentTurn);
-        startTimer(currentTurn);
-    }
-});
-
-setInitialTime(); // 初めに設定を反映
+function updateFischerTime() {
+    fischerIncrement = parseInt(document.getElementById('fischer-time').value, 10) || 0;
+}
