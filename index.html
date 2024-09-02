@@ -48,8 +48,8 @@
             font-size: 1rem;
             margin: 3px;
             flex: 1;
-            max-width: 140px;  /* 各ボタンの最大幅を設定 */
-            box-sizing: border-box;  /* パディングを含めたサイズ計算 */
+            max-width: 140px;
+            box-sizing: border-box;
         }
         #fischer-time {
             display: none;
@@ -74,7 +74,7 @@
             <option value="fischer">フィッシャー</option>
         </select>
         <input type="number" id="initial-time" placeholder="開始時間（分）" min="1" max="60">
-        <input type="number" id="fischer-time" placeholder="加算秒数" min="1" max="60">
+        <input type="number" id="fischer-time" placeholder="フィッシャー加算秒数" min="1" max="60">
     </div>
 
     <script>
@@ -115,11 +115,11 @@
             clearInterval(activeTimer);
             activeTimer = null;
             const initialTime = parseInt(document.getElementById('initial-time').value, 10) || 10;
-            senteTime = initialTime * 60;  // デフォルトの開始時間にリセット
+            senteTime = initialTime * 60;
             goteTime = initialTime * 60;
             updateDisplay('sente-time', senteTime);
             updateDisplay('gote-time', goteTime);
-            currentPlayer = 'sente';  // リセット後は先手から再開
+            currentPlayer = 'sente';
         }
 
         function updateTimer(id, time) {
@@ -168,18 +168,21 @@
         }
 
         function toggleTimer(nextPlayer) {
-            pauseTimers();  // 現在のタイマーを一時停止
-            currentPlayer = nextPlayer;
+            if (activeTimer) {
+                pauseTimers();
 
-            if (mode === 'fischer') {
-                if (currentPlayer === 'sente') {
-                    goteTime += fischerIncrement;
-                } else {
-                    senteTime += fischerIncrement;
+                if (mode === 'fischer') {
+                    if (currentPlayer === 'sente') {
+                        senteTime += fischerIncrement;
+                    } else {
+                        goteTime += fischerIncrement;
+                    }
+                    updateDisplay(currentPlayer === 'sente' ? 'sente-time' : 'gote-time', currentPlayer === 'sente' ? senteTime : goteTime);
                 }
-            }
 
-            startTimers();  // 次のプレイヤーのタイマーを開始
+                currentPlayer = nextPlayer;
+                startTimers();
+            }
         }
     </script>
 </body>
